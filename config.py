@@ -58,6 +58,19 @@ HEX_SPIRAL_PARAMS = {
 }
 
 # ─────────────────────────────────────────────
+# Hexagonal Microheater Reference Design Parameters
+# ─────────────────────────────────────────────
+# Pointy-top hexagon with a single continuous serpentine path.
+# N tracks total, U-turns at the 210° gap axis, and a central return line.
+REFERENCE_HEX_PARAMS = {
+    "R_max":         100.0,   # µm – circumradius of outermost hexagon
+    "n_tracks":        7,     # number of tracks
+    "spacing":         8.0,   # µm – radial distance between adjacent tracks
+    "gap_width":      24.0,   # µm – width of the clearance gap at 210°
+    "lead_length":    30.0,   # µm – length of IN/OUT terminal leads extending from the gap
+}
+
+# ─────────────────────────────────────────────
 # Layer Definitions
 # ─────────────────────────────────────────────
 # AutoCAD Color Index (ACI):

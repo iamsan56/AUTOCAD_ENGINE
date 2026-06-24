@@ -38,13 +38,15 @@ from src.utils      import print_header, print_ok, print_info, print_err, make_s
 # Design registry  {display_name: module_path}
 # ─────────────────────────────────────────────────────────────────
 DESIGN_REGISTRY: dict[str, str] = {
-    "microheater":       "designs.microheater",
-    "hex_spiral_heater": "designs.hex_spiral_heater",
+    "microheater":          "designs.microheater",
+    "hex_spiral_heater":    "designs.hex_spiral_heater",
+    "reference_hex_heater": "designs.reference_hex_heater",
 }
 
 DESIGN_LABELS: dict[str, str] = {
-    "microheater":       "Mirrored Wavy Microheater",
-    "hex_spiral_heater": "Hexagonal Spiral Microheater",
+    "microheater":          "Mirrored Wavy Microheater",
+    "hex_spiral_heater":    "Hexagonal Spiral Microheater",
+    "reference_hex_heater": "Reference Hexagonal Serpentine",
 }
 
 FORMAT_OPTIONS = [
