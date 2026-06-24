@@ -203,13 +203,16 @@ IN(-40,0) ──► wavy UP  (outer-left)  ──► wavy RIGHT (top)
 
 | Command | What it does |
 |---------|-------------|
-| `python main.py` | Draw microheater, save as `.dwg` |
+| `python main.py` | Draw **microheater**, save as `.dwg` |
+| `python main.py --design hex_spiral_heater` | Draw **hexagonal spiral**, save as `.dwg` |
 | `python main.py --format dxf` | Save as `.dxf` |
 | `python main.py --format both` | Save as `.dwg` **and** `.dxf` |
-| `python main.py --design microheater` | Explicit design name |
+| `python main.py --design microheater --format both` | Microheater, both formats |
+| `python main.py --design hex_spiral_heater --format both` | Hex spiral, both formats |
 | `python main.py --list` | Print all registered designs |
 | `python main.py --help` | Show all CLI options |
-| `python designs\microheater.py` | Quick geometry self-test (no AutoCAD needed) |
+| `python designs\microheater.py` | Geometry self-test, no AutoCAD needed |
+| `python designs\hex_spiral_heater.py` | Hex spiral self-test, no AutoCAD needed |
 
 ---
 

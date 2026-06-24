@@ -28,7 +28,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from config         import LAYERS, MICROHEATER_PARAMS, SAVES_DIR, INSUNITS
+from config         import LAYERS, MICROHEATER_PARAMS, HEX_SPIRAL_PARAMS, SAVES_DIR, INSUNITS
 from src.cad_engine import AutoCADEngine
 from src.utils      import print_header, print_ok, print_info, print_err, make_save_path
 
@@ -36,7 +36,8 @@ from src.utils      import print_header, print_ok, print_info, print_err, make_s
 # Registry of available designs
 # ─────────────────────────────────────────────
 DESIGN_REGISTRY: dict[str, str] = {
-    "microheater": "designs.microheater",  # module path → build_path(), DESIGN_META
+    "microheater":       "designs.microheater",       # Mirrored Wavy Microheater
+    "hex_spiral_heater": "designs.hex_spiral_heater", # Hexagonal Spiral Microheater
 }
 
 
@@ -105,11 +106,12 @@ def run_design(design_name: str, fmt: str) -> None:
         if markers:
             print_ok(f"Terminal markers added: {[m['label'] for m in markers]}")
 
-        # Title text
-        title = meta.get("title", design_name)
-        cad.draw_text(title, x=-45, y=95,
-                      height=MICROHEATER_PARAMS["title_height"],
-                      layer="LABELS")
+        # Title text — placed above the geometry using design-specific offset
+        title    = meta.get("title", design_name)
+        title_x  = meta.get("title_x", -55)
+        title_y  = meta.get("title_y",  95)
+        title_h  = meta.get("title_height", MICROHEATER_PARAMS["title_height"])
+        cad.draw_text(title, x=title_x, y=title_y, height=title_h, layer="LABELS")
 
         cad.regen()
         cad.zoom_extents()

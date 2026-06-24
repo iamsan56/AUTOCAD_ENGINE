@@ -6,9 +6,9 @@ All units are in micrometers (µm) unless otherwise noted.
 import os
 
 # ─────────────────────────────────────────────
-# Project Paths
+# Project Paths  (auto-detected — works on any machine)
 # ─────────────────────────────────────────────
-PROJECT_ROOT = r"D:\AUTOCAD_ENGINE"
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SAVES_DIR    = os.path.join(PROJECT_ROOT, "saves")
 
 # ─────────────────────────────────────────────
@@ -49,6 +49,19 @@ LAYERS = {
     "MICROHEATER": {"color": 5, "linetype": "Continuous"},  # Blue  – heater path
     "LABELS":      {"color": 2, "linetype": "Continuous"},  # Yellow – IN / OUT text
     "MARKERS":     {"color": 1, "linetype": "Continuous"},  # Red   – terminal dots
+}
+
+# ─────────────────────────────────────────────
+# Hexagonal Spiral Microheater Parameters
+# ─────────────────────────────────────────────
+HEX_SPIRAL_PARAMS = {
+    "R_max":         50.0,   # µm – outermost ring circumradius (center → vertex)
+    "n_rings":        6,     # number of concentric hexagonal rings
+    "ring_spacing":   7.0,   # µm – radial gap between adjacent ring centrelines
+    "uturn_dip":      4.5,   # µm – how far the bottom U-turns dip below the hex vertex
+    "track_width":    3.0,   # µm – heater track width (reference / markers)
+    "label_height":   3.0,   # µm – IN / OUT text height
+    "title_height":   4.0,   # µm – title text height
 }
 
 # ─────────────────────────────────────────────
