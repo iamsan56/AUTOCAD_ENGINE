@@ -81,27 +81,33 @@ class AutoCADEngine:
         pythoncom.CoInitialize()
 
         try:
-            self._acad = win32com.client.GetActiveObject("AutoCAD.Application")
-            print_ok("Connected to existing AutoCAD instance")
+            # Force Early Binding (solves dynamic dispatch AttributeError for .Add)
+            self._acad = win32com.client.gencache.EnsureDispatch("AutoCAD.Application")
+            print_ok("Connected to AutoCAD instance (Early Binding)")
         except Exception:
-            if not create_if_not_exists:
-                raise RuntimeError(
-                    "AutoCAD is not running. "
-                    "Start AutoCAD first, or pass create_if_not_exists=True."
-                )
-            print_info("AutoCAD not found – launching …")
-            self._acad = win32com.client.Dispatch("AutoCAD.Application")
-            self._acad.Visible = True
-            # Give AutoCAD time to fully start up
-            for _ in range(10):
+            try:
+                self._acad = win32com.client.GetActiveObject("AutoCAD.Application")
+                print_ok("Connected to existing AutoCAD instance (Late Binding)")
+            except Exception:
+                if not create_if_not_exists:
+                    raise RuntimeError(
+                        "AutoCAD is not running. "
+                        "Start AutoCAD first, or pass create_if_not_exists=True."
+                    )
+                print_info("AutoCAD not found – launching …")
+                self._acad = win32com.client.Dispatch("AutoCAD.Application")
+                print_ok("AutoCAD launched successfully")
+        
+        self._acad.Visible = True
+        
+        # Give AutoCAD time to fully start up if it's launching
+        for _ in range(10):
+            try:
+                _ = self._acad.Version
+                break
+            except Exception:
                 time.sleep(1)
-                try:
-                    _ = self._acad.Version
-                    break
-                except Exception:
-                    continue
-            print_ok("AutoCAD launched successfully")
-
+                
         return self
 
     def disconnect(self) -> None:
@@ -121,7 +127,12 @@ class AutoCADEngine:
         if template and os.path.exists(template):
             self._doc = self._acad.Documents.Open(template)
         else:
-            self._doc = self._acad.Documents.Add()
+            try:
+                self._doc = self._acad.Documents.Add()
+            except Exception as e:
+                # Fallback to ActiveDocument if .Add() fails (common with Late Binding in pywin32)
+                self.use_active_drawing()
+                return
 
         self._acad.ActiveDocument = self._doc
         self._mspace = self._doc.ModelSpace
