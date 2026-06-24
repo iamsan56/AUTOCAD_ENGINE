@@ -81,22 +81,19 @@ class AutoCADEngine:
         pythoncom.CoInitialize()
 
         try:
-            # Force Early Binding (solves dynamic dispatch AttributeError for .Add)
-            self._acad = win32com.client.gencache.EnsureDispatch("AutoCAD.Application")
-            print_ok("Connected to AutoCAD instance (Early Binding)")
+            # Force Late Binding explicitly. Early binding (gencache) causes strict 
+            # case-sensitivity issues with properties like .Color vs .color in newer AutoCADs.
+            self._acad = win32com.client.dynamic.Dispatch("AutoCAD.Application")
+            print_ok("Connected to AutoCAD instance (Late Binding)")
         except Exception:
-            try:
-                self._acad = win32com.client.GetActiveObject("AutoCAD.Application")
-                print_ok("Connected to existing AutoCAD instance (Late Binding)")
-            except Exception:
-                if not create_if_not_exists:
-                    raise RuntimeError(
-                        "AutoCAD is not running. "
-                        "Start AutoCAD first, or pass create_if_not_exists=True."
-                    )
-                print_info("AutoCAD not found – launching …")
-                self._acad = win32com.client.Dispatch("AutoCAD.Application")
-                print_ok("AutoCAD launched successfully")
+            if not create_if_not_exists:
+                raise RuntimeError(
+                    "AutoCAD is not running. "
+                    "Start AutoCAD first, or pass create_if_not_exists=True."
+                )
+            print_info("AutoCAD not found – launching …")
+            self._acad = win32com.client.dynamic.Dispatch("AutoCAD.Application")
+            print_ok("AutoCAD launched successfully")
         
         self._acad.Visible = True
         
@@ -153,12 +150,21 @@ class AutoCADEngine:
                 layer = self._doc.Layers.Item(name)
             except Exception:
                 layer = self._doc.Layers.Add(name)
-            layer.Color = props.get("color", 7)
+            
+            # Handle case-sensitivity issues across AutoCAD versions
+            try:
+                layer.Color = props.get("color", 7)
+            except Exception:
+                layer.color = props.get("color", 7)
+                
             try:
                 lt = props.get("linetype", "Continuous")
                 if lt != "Continuous":
                     self._doc.Linetypes.Load(lt, "acad.lin")
-                layer.Linetype = lt
+                try:
+                    layer.Linetype = lt
+                except Exception:
+                    layer.linetype = lt
             except Exception:
                 pass
         print_ok(f"Layers configured: {', '.join(layers_config.keys())}")
@@ -195,10 +201,23 @@ class AutoCADEngine:
 
         var  = _make_variant(flat_points)
         pline = self._mspace.AddLightWeightPolyline(var)
-        pline.Layer  = layer
-        pline.Closed = closed
+        
+        try:
+            pline.Layer = layer
+        except Exception:
+            pline.layer = layer
+            
+        try:
+            pline.Closed = closed
+        except Exception:
+            pline.closed = closed
+            
         if width > 0:
-            pline.ConstantWidth = width
+            try:
+                pline.ConstantWidth = width
+            except Exception:
+                pline.constantWidth = width
+                
         return pline
 
     def draw_text(
@@ -218,7 +237,10 @@ class AutoCADEngine:
         """
         pt  = _make_point_variant(x, y)
         txt = self._mspace.AddText(text, pt, float(height))
-        txt.Layer = layer
+        try:
+            txt.Layer = layer
+        except Exception:
+            txt.layer = layer
         return txt
 
     def draw_circle(
@@ -230,7 +252,10 @@ class AutoCADEngine:
         """Draw a circle (used for terminal markers)."""
         center = _make_point_variant(cx, cy)
         circ   = self._mspace.AddCircle(center, float(radius))
-        circ.Layer = layer
+        try:
+            circ.Layer = layer
+        except Exception:
+            circ.layer = layer
         return circ
 
     # ── View / units ─────────────────────────────────────────────
