@@ -16,8 +16,8 @@ SAVES_DIR    = os.path.join(PROJECT_ROOT, "saves")
 # ─────────────────────────────────────────────
 MICROHEATER_PARAMS = {
     # Wave shape
-    "wave_amplitude": 5.0,      # µm – perpendicular half-amplitude of sinusoidal wave
-    "wave_period":   10.0,      # µm – one full cycle length along path
+    "wave_amplitude": 5.0,      # µm
+    "wave_period":   10.0,      # µm
 
     # Heater track reference
     "track_width":   3.0,       # µm
@@ -39,12 +39,22 @@ MICROHEATER_PARAMS = {
 # ─────────────────────────────────────────────
 # Hexagonal Spiral Microheater Parameters
 # ─────────────────────────────────────────────
+#
+# Each "ring band" is the space between two concentric hexagons.
+# The path makes TWO passes per band (outer track + inner track),
+# creating the double-line look on each hexagonal face.
+#
+#   band_pitch = track_separation + ring_gap
+#   Ring i outer:  R_max - i * band_pitch
+#   Ring i inner:  R_max - i * band_pitch - track_separation
+#
 HEX_SPIRAL_PARAMS = {
-    "R_max":         100.0,  # µm – outermost ring circumradius (center → vertex)
-    "n_rings":         8,    # number of concentric hexagonal rings
-    "ring_spacing":   10.0,  # µm – radial gap between adjacent ring centrelines
-    "uturn_dip":       3.0,  # µm – how far the bottom U-turns dip below hex vertex
-    "track_width":     3.0,  # µm
+    "R_max":              100.0,   # µm – circumradius of outermost hexagon
+    "n_rings":              6,     # number of double-pass ring bands
+    "track_separation":     7.0,   # µm – gap between outer/inner tracks within one band
+    "ring_gap":             5.0,   # µm – visible gap between consecutive bands
+    "uturn_bulge":          4.0,   # µm – outward bulge of U-turn curves at bottom
+    "lead_length":         15.0,   # µm – length of IN/OUT terminal leads
 }
 
 # ─────────────────────────────────────────────
@@ -59,5 +69,5 @@ LAYERS = {
 # ─────────────────────────────────────────────
 # Drawing Settings
 # ─────────────────────────────────────────────
-DXF_VERSION = "R2010"   # ezdxf version string (standalone mode)
-INSUNITS    = 6         # AutoCAD drawing units: 6 = micrometers
+DXF_VERSION = "R2010"
+INSUNITS    = 6   # 6 = micrometers
