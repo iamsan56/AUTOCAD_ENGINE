@@ -19,25 +19,32 @@ MICROHEATER_PARAMS = {
     "wave_amplitude": 5.0,      # µm – perpendicular half-amplitude of sinusoidal wave
     "wave_period":   10.0,      # µm – one full cycle length along path
 
-    # Heater track reference (cosmetic, for future width-extrusion)
+    # Heater track reference
     "track_width":   3.0,       # µm
 
     # Terminal coordinates
-    "in_x":  -40.0,  "in_y":  0.0,   # IN  terminal (leftmost)
-    "out_x":   0.0,  "out_y": 0.0,   # OUT terminal (center)
+    "in_x":  -40.0,  "in_y":  0.0,
+    "out_x":   0.0,  "out_y": 0.0,
 
     # Main path geometry
-    "outer_left_x":  -40.0,   # x of outer-left vertical run
-    "outer_right_x":  40.0,   # x of outer-right vertical run
-    "top_y":          82.0,   # y of top horizontal run
-    "inner_left_x":  -20.0,   # x of inner-left vertical run
-    "inner_right_x":  20.0,   # x of inner-right vertical run
-    "inner_top_y":    70.0,   # y of inner top U-turn
-    "lower_y":        15.0,   # y of bottom U-turns
+    "outer_left_x":  -40.0,
+    "outer_right_x":  40.0,
+    "top_y":          82.0,
+    "inner_left_x":  -20.0,
+    "inner_right_x":  20.0,
+    "inner_top_y":    70.0,
+    "lower_y":        15.0,
+}
 
-    # Text labels
-    "label_height":   3.0,    # µm text height for IN / OUT labels
-    "title_height":   4.0,    # µm text height for title
+# ─────────────────────────────────────────────
+# Hexagonal Spiral Microheater Parameters
+# ─────────────────────────────────────────────
+HEX_SPIRAL_PARAMS = {
+    "R_max":         100.0,  # µm – outermost ring circumradius (center → vertex)
+    "n_rings":         8,    # number of concentric hexagonal rings
+    "ring_spacing":   10.0,  # µm – radial gap between adjacent ring centrelines
+    "uturn_dip":       3.0,  # µm – how far the bottom U-turns dip below hex vertex
+    "track_width":     3.0,  # µm
 }
 
 # ─────────────────────────────────────────────
@@ -46,22 +53,7 @@ MICROHEATER_PARAMS = {
 # AutoCAD Color Index (ACI):
 #   1=Red  2=Yellow  3=Green  4=Cyan  5=Blue  6=Magenta  7=White
 LAYERS = {
-    "MICROHEATER": {"color": 5, "linetype": "Continuous"},  # Blue  – heater path
-    "LABELS":      {"color": 2, "linetype": "Continuous"},  # Yellow – IN / OUT text
-    "MARKERS":     {"color": 1, "linetype": "Continuous"},  # Red   – terminal dots
-}
-
-# ─────────────────────────────────────────────
-# Hexagonal Spiral Microheater Parameters
-# ─────────────────────────────────────────────
-HEX_SPIRAL_PARAMS = {
-    "R_max":         50.0,   # µm – outermost ring circumradius (center → vertex)
-    "n_rings":        6,     # number of concentric hexagonal rings
-    "ring_spacing":   7.0,   # µm – radial gap between adjacent ring centrelines
-    "uturn_dip":      4.5,   # µm – how far the bottom U-turns dip below the hex vertex
-    "track_width":    3.0,   # µm – heater track width (reference / markers)
-    "label_height":   3.0,   # µm – IN / OUT text height
-    "title_height":   4.0,   # µm – title text height
+    "MICROHEATER": {"color": 7, "linetype": "Continuous"},  # White – heater path
 }
 
 # ─────────────────────────────────────────────

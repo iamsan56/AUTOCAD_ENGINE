@@ -91,32 +91,64 @@ pywin32 OK ✅
 
 ---
 
-## 6 — Run the Microheater Design
+## 6 — Run the Engine
 
-### Draw and save as DWG *(default)*
+Simply run:
+
 ```powershell
 python main.py
 ```
 
-### Draw and save as DXF
-```powershell
-python main.py --format dxf
+You will see an **interactive menu** — no need to type any flags:
+
+```
+  ╔═══════════════════════════════════════════════════╗
+  ║           A U T O C A D   E N G I N E            ║
+  ║         Python → COM Macro Automation            ║
+  ╚═══════════════════════════════════════════════════╝
+
+  ┌─────────────────────────────────────────────────────┐
+  │            Which design do you want?                │
+  └─────────────────────────────────────────────────────┘
+
+    [1]  Mirrored Wavy Microheater
+         Serpentine microheater with sinusoidal wave pattern…
+
+    [2]  Hexagonal Spiral Microheater
+         8 concentric flat-top hexagonal rings (100 µm → 30 µm)…
+
+  Enter number: 2
+
+  ✅  Selected: Hexagonal Spiral Microheater
+
+  ┌─────────────────────────────────────────────────────┐
+  │              Which format to save?                  │
+  └─────────────────────────────────────────────────────┘
+
+    [1]  DWG  — AutoCAD native format
+    [2]  DXF  — text-based, universal format
+    [3]  Both DWG and DXF
+
+  Enter number [1]: 3
+
+  ✅  Format: Both DWG and DXF
 ```
 
-### Draw and save as **both** DWG and DXF
-```powershell
-python main.py --format both
-```
+AutoCAD opens automatically, draws the design (white lines, no text), and saves to `saves\`.
 
-### Specify a design explicitly
-```powershell
-python main.py --design microheater --format dwg
-```
+---
 
-### List all available designs
-```powershell
-python main.py --list
-```
+## Command Reference
+
+| Command | What it does |
+|---------|-------------|
+| `python main.py` | **Interactive menu** — pick design & format |
+| `python main.py --design microheater --format dwg` | Non-interactive, microheater → DWG |
+| `python main.py --design hex_spiral_heater --format both` | Non-interactive, hex spiral → DWG+DXF |
+| `python main.py --list` | Print all registered designs |
+| `python main.py --help` | Show all CLI options |
+| `python designs\microheater.py` | Geometry self-test, no AutoCAD needed |
+| `python designs\hex_spiral_heater.py` | Hex spiral self-test, no AutoCAD needed |
 
 ---
 
