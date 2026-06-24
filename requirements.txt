@@ -1,0 +1,10 @@
+# ─────────────────────────────────────────────────────────
+# AutoCAD Engine — Python Dependencies
+# Install inside a virtual environment:
+#   python -m venv venv
+#   venv\Scripts\activate
+#   pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────
+
+# Windows COM bridge — required to talk to AutoCAD via ActiveX/COM
+pywin32>=306
