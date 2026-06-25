@@ -45,11 +45,15 @@ def wavy_pts(
     px = -dy
     py =  dx
 
+    # Force the period to fit exactly into the edge length so the wave ends at 0
+    num_cycles = max(1, round(length / period))
+    actual_period = length / num_cycles
+
     pts: List[float] = []
     for i in range(n_points + 1):
         t     = i / n_points
         along = t * length
-        wave  = amplitude * math.sin(2.0 * math.pi * along / period)
+        wave  = amplitude * math.sin(2.0 * math.pi * along / actual_period)
 
         x = x0 + t * (x1 - x0) + wave * px
         y = y0 + t * (y1 - y0) + wave * py
@@ -90,14 +94,18 @@ def rectified_wave_pts(
     else:
         px, py = -dy, dx
 
+    # Force the period to fit exactly into the edge length so the bump ends exactly at 0
+    num_bumps = max(1, round(length / period))
+    actual_period = length / num_bumps
+
     pts: List[float] = []
     for i in range(n_points + 1):
         t     = i / n_points
         along = t * length
         # Absolute value of sine = full wave rectifier
         # We don't use 2.0*pi here because abs(sin) doubles the frequency!
-        # If we want 'period' to represent one full bump width, we use pi*along/period.
-        wave  = amplitude * abs(math.sin(math.pi * along / period))
+        # If we want 'period' to represent one full bump width, we use pi*along/actual_period.
+        wave  = amplitude * abs(math.sin(math.pi * along / actual_period))
 
         x = x0 + t * (x1 - x0) + wave * px
         y = y0 + t * (y1 - y0) + wave * py
