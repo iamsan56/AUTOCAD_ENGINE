@@ -109,9 +109,8 @@ RECTIFIED_REFERENCE_HEX_PARAMS = {
 # ─────────────────────────────────────────────
 RECTIFIED_HEX_SPIRAL_PARAMS = {
     "R_max":            450.0,
-    "n_rings":          7,
-    "track_separation": 20.0,
-    "ring_gap":         20.0,
+    "n_turns":          10,
+    "spacing":          30.0,
     "lead_length":      50.0,
     
     "amplitude":        5.0,
