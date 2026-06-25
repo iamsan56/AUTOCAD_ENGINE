@@ -98,6 +98,9 @@ def rectified_wave_pts(
     num_bumps = max(1, round(length / period))
     actual_period = length / num_bumps
 
+    # Ensure enough resolution for smooth semicircles (at least 30 points per bump)
+    n_points = max(n_points, int(num_bumps * 30))
+
     pts: List[float] = []
     for i in range(n_points + 1):
         t     = i / n_points

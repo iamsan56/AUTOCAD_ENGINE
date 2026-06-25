@@ -133,12 +133,9 @@ def build_path(params: dict | None = None) -> list[float]:
             # U-turn on the LEFT side (connects Track i to Track i+1)
             if i < N - 1:
                 _, p_left_next = calc_gap_endpoints(rings[i+1], gap_width)
-                mx = (p_left[0] + p_left_next[0]) / 2.0
-                my = (p_left[1] + p_left_next[1]) / 2.0
-                start_angle = math.radians(210)
-                end_angle   = math.radians(390)
-                arc = arc_pts(mx, my, spacing / 2.0, start_angle, end_angle)
-                append_segment(all_pts, arc)
+                # Instead of a smooth arc (big semicircle head), connect with a straight rectified wave
+                wave_u_turn = rectified_wave_pts(p_left[0], p_left[1], p_left_next[0], p_left_next[1], amp, per, n_points=50, outward=outward)
+                append_segment(all_pts, wave_u_turn)
         else:
             # Odd tracks go CW
             append_segment(all_pts, path_cw_wavy(R, gap_width, amp, per, outward))
@@ -146,12 +143,9 @@ def build_path(params: dict | None = None) -> list[float]:
             # U-turn on the RIGHT side
             if i < N - 1:
                 p_right_next, _ = calc_gap_endpoints(rings[i+1], gap_width)
-                mx = (p_right[0] + p_right_next[0]) / 2.0
-                my = (p_right[1] + p_right_next[1]) / 2.0
-                start_angle = math.radians(210)
-                end_angle   = math.radians(30)
-                arc = arc_pts(mx, my, spacing / 2.0, start_angle, end_angle)
-                append_segment(all_pts, arc)
+                # Instead of a smooth arc, connect with a straight rectified wave
+                wave_u_turn = rectified_wave_pts(p_right[0], p_right[1], p_right_next[0], p_right_next[1], amp, per, n_points=50, outward=outward)
+                append_segment(all_pts, wave_u_turn)
 
     # ── Terminal 2 (Inner return line) ─────────────────────────────
     R_last = rings[-1]
