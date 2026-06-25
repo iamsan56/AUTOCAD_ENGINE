@@ -1,7 +1,7 @@
 """
 designs/rectified_hex_spiral.py — Rectified Hexagonal Spiral Microheater
 
-Single-pass continuous hexagonal spiral with positive full-wave rectifier texture.
+Bifilar (double) continuous hexagonal spiral with positive full-wave rectifier texture.
 Enforces perfect radial phase-locking (no crest mismatch) and continuous paths
 without any U-turn jumps (no semicircle heads).
 """
@@ -18,7 +18,7 @@ from config import RECTIFIED_HEX_SPIRAL_PARAMS
 
 
 def build_path(params: dict | None = None) -> list[float]:
-    """Build the complete single-pass wavy hexagonal spiral."""
+    """Build the complete bifilar wavy hexagonal spiral."""
     p           = params or RECTIFIED_HEX_SPIRAL_PARAMS
     R_max       = p["R_max"]
     n_turns     = p["n_turns"]
@@ -29,62 +29,63 @@ def build_path(params: dict | None = None) -> list[float]:
     outward_cfg = p["outward_bumps"]
 
     # Global bump count based on outermost radius ensures perfect radial phase lock.
-    # Every single straight edge of the spiral will be forced to have exactly this
-    # many bumps, regardless of its length. This means the angular spacing of the
-    # bumps is identical for all turns, guaranteeing that crests align with crests
-    # exactly along the radial axes.
     N_full = max(1, round(R_max / per))
-
-    # The spiral starts at the bottom-left and goes inwards clockwise.
-    # For a CW path, the "left" normal vector points away from the center.
-    # Since outward_cfg=True means "bulge away from center", we set cw_outward 
-    # to the opposite of outward_cfg so the math points in the correct direction.
-    cw_outward = not outward_cfg
 
     all_pts: list[float] = []
 
-    # Calculate vertices of the continuous spiral
-    N_verts = 6 * n_turns + 1
-    start_angle = 240.0
+    N_verts = 6 * n_turns
+    waypoints = []
     
-    # ── Terminal Lead ──────────────────────────────────────────────
-    lead_angle = math.radians(start_angle)
-    start_x = R_max * math.cos(lead_angle)
-    start_y = R_max * math.sin(lead_angle)
+    # ── Spiral 1 (IN) ──────────────────────────────────────────────
+    # Spirals inwards clockwise
+    for i in range(N_verts + 1):
+        R = R_max - i * (spacing / 3.0)
+        angle = math.radians(240 - i * 60)
+        waypoints.append((R * math.cos(angle), R * math.sin(angle)))
+        
+    # ── Spiral 2 (OUT) ─────────────────────────────────────────────
+    # Spirals outwards counter-clockwise (generated backwards from center)
+    for i in range(N_verts - 1, -1, -1):
+        R = R_max - spacing - i * (spacing / 3.0)
+        angle = math.radians(240 - i * 60)
+        waypoints.append((R * math.cos(angle), R * math.sin(angle)))
+        
+    # ── Leads ──────────────────────────────────────────────────────
+    start_angle = math.radians(240)
     
-    lead_tip_x = start_x + lead_len * math.cos(lead_angle)
-    lead_tip_y = start_y + lead_len * math.sin(lead_angle)
-    
-    # Wavy lead going inwards to the start vertex
-    lead_wave = rectified_wave_pts(lead_tip_x, lead_tip_y, start_x, start_y, amp, per, outward=outward_cfg)
-    all_pts.extend(lead_wave)
+    # IN Lead (connects to waypoint 0)
+    in_start_x = waypoints[0][0] + lead_len * math.cos(start_angle)
+    in_start_y = waypoints[0][1] + lead_len * math.sin(start_angle)
+    wave_in_lead = rectified_wave_pts(in_start_x, in_start_y, waypoints[0][0], waypoints[0][1], amp, per, outward=outward_cfg)
+    all_pts.extend(wave_in_lead)
 
     # ── Spiral Body ────────────────────────────────────────────────
-    waypoints = []
-    for i in range(N_verts):
-        # Radius decreases continuously at each vertex (Archimedean spiral)
-        R = R_max - i * (spacing / 6.0)
-        # Angle goes clockwise by 60 degrees per vertex
-        angle = math.radians(start_angle - i * 60)
-        x = R * math.cos(angle)
-        y = R * math.sin(angle)
-        waypoints.append((x, y))
-
     for i in range(len(waypoints) - 1):
         x0, y0 = waypoints[i]
         x1, y1 = waypoints[i+1]
         
-        # We enforce exactly N_full bumps per edge.
-        # This completely solves the "crest and trough mismatch" problem.
+        # Spiral 1 (IN) is CW. Spiral 2 (OUT) is CCW.
+        if i < N_verts:
+            outward = not outward_cfg  # CW
+        else:
+            outward = outward_cfg      # CCW
+            
         wave = rectified_wave_pts(
             x0, y0, 
             x1, y1, 
             amp, per, 
-            n_points=max(50, N_full * 30), # Solves the low-resolution aliasing
-            outward=cw_outward, 
+            n_points=max(50, N_full * 30),
+            outward=outward, 
             num_bumps=N_full
         )
         append_segment(all_pts, wave)
+
+    # OUT Lead (connects to last waypoint)
+    last_pt = waypoints[-1]
+    out_end_x = last_pt[0] + lead_len * math.cos(start_angle)
+    out_end_y = last_pt[1] + lead_len * math.sin(start_angle)
+    wave_out_lead = rectified_wave_pts(last_pt[0], last_pt[1], out_end_x, out_end_y, amp, per, outward=outward_cfg)
+    append_segment(all_pts, wave_out_lead)
 
     return all_pts
 
@@ -95,17 +96,13 @@ DESIGN_META = {
     "layer":  "MICROHEATER",
     "units":  "micrometers",
     "description": (
-        "Single-pass continuous Archimedean hexagonal spiral with perfect "
+        "Bifilar (double) continuous Archimedean hexagonal spiral with perfect "
         "positive full-wave rectifier semicircles and complete radial phase alignment."
     ),
 }
 
-
 if __name__ == "__main__":
     pts    = build_path()
     n      = len(pts) // 2
-    xs, ys = pts[0::2], pts[1::2]
     print(f"Total vertices : {n}")
-    print(f"X range        : {min(xs):.1f}  …  {max(xs):.1f}  µm")
-    print(f"Y range        : {min(ys):.1f}  …  {max(ys):.1f}  µm")
-    print("Successfully generated continuous wavy spiral path.")
+    print("Successfully generated continuous wavy double spiral path.")
