@@ -45,7 +45,7 @@ def build_path(params: dict | None = None) -> list[float]:
         
     # ── Spiral 2 (OUT) ─────────────────────────────────────────────
     # Spirals outwards counter-clockwise (generated backwards from center)
-    for i in range(N_verts - 1, -1, -1):
+    for i in range(N_verts, -1, -1):
         R = R_max - spacing - i * (spacing / 3.0)
         angle = math.radians(240 - i * 60)
         waypoints.append((R * math.cos(angle), R * math.sin(angle)))
