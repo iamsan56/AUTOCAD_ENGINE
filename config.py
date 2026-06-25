@@ -90,6 +90,21 @@ RECTIFIED_HEXAGON_PARAMS = {
 }
 
 # ─────────────────────────────────────────────
+# Rectified Reference Hexagon Parameters
+# ─────────────────────────────────────────────
+RECTIFIED_REFERENCE_HEX_PARAMS = {
+    "R_max":       450.0,
+    "n_tracks":    7,
+    "spacing":     50.0,
+    "gap_width":   80.0,
+    "lead_length": 50.0,
+    
+    "amplitude":     5.0,
+    "period":       10.0,
+    "outward_bumps": True,
+}
+
+# ─────────────────────────────────────────────
 # Layer Definitions
 # ─────────────────────────────────────────────
 # AutoCAD Color Index (ACI):
