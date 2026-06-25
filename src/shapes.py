@@ -59,6 +59,54 @@ def wavy_pts(
 
 
 # ─────────────────────────────────────────────────────────────────
+# Rectified Sinusoidal segment (Full wave rectifier)
+# ─────────────────────────────────────────────────────────────────
+
+def rectified_wave_pts(
+    x0: float, y0: float,
+    x1: float, y1: float,
+    amplitude: float,
+    period: float,
+    n_points: int = 200,
+    outward: bool = True
+) -> List[float]:
+    """
+    Generate a full-wave rectified polyline (only positive semi-circle bumps) 
+    from (x0,y0) to (x1,y1).
+    """
+    length = math.hypot(x1 - x0, y1 - y0)
+    if length < 1e-9:
+        return [x0, y0]
+
+    # Unit vector along path
+    dx = (x1 - x0) / length
+    dy = (y1 - y0) / length
+    
+    # Perpendicular unit vector
+    # For a CCW path, (-dy, dx) points inward. 
+    # (dy, -dx) points outward.
+    if outward:
+        px, py = dy, -dx
+    else:
+        px, py = -dy, dx
+
+    pts: List[float] = []
+    for i in range(n_points + 1):
+        t     = i / n_points
+        along = t * length
+        # Absolute value of sine = full wave rectifier
+        # We don't use 2.0*pi here because abs(sin) doubles the frequency!
+        # If we want 'period' to represent one full bump width, we use pi*along/period.
+        wave  = amplitude * abs(math.sin(math.pi * along / period))
+
+        x = x0 + t * (x1 - x0) + wave * px
+        y = y0 + t * (y1 - y0) + wave * py
+        pts.extend([x, y])
+
+    return pts
+
+
+# ─────────────────────────────────────────────────────────────────
 # Circular arc
 # ─────────────────────────────────────────────────────────────────
 

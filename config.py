@@ -80,6 +80,16 @@ WAVY_HEXAGON_PARAMS = {
 }
 
 # ─────────────────────────────────────────────
+# Rectified Hexagon Parameters
+# ─────────────────────────────────────────────
+RECTIFIED_HEXAGON_PARAMS = {
+    "radius":         100.0,   # µm – circumradius of the hexagon
+    "amplitude":        5.0,   # µm – peak amplitude of the rectified semi-circles
+    "period":          20.0,   # µm – length of one full semi-circle bump
+    "outward_bumps":   True,   # True = bumps point away from center, False = towards center
+}
+
+# ─────────────────────────────────────────────
 # Layer Definitions
 # ─────────────────────────────────────────────
 # AutoCAD Color Index (ACI):

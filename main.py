@@ -42,6 +42,7 @@ DESIGN_REGISTRY: dict[str, str] = {
     "hex_spiral_heater":    "designs.hex_spiral_heater",
     "reference_hex_heater": "designs.reference_hex_heater",
     "wavy_hexagon":         "designs.wavy_hexagon",
+    "rectified_hexagon":    "designs.rectified_hexagon",
 }
 
 DESIGN_LABELS: dict[str, str] = {
@@ -49,6 +50,7 @@ DESIGN_LABELS: dict[str, str] = {
     "hex_spiral_heater":    "Hexagonal Spiral Microheater",
     "reference_hex_heater": "Reference Hexagonal Serpentine",
     "wavy_hexagon":         "Wavy Hexagon",
+    "rectified_hexagon":    "Rectified (Semi-circle) Hexagon",
 }
 
 FORMAT_OPTIONS = [
