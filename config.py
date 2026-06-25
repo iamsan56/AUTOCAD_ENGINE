@@ -71,6 +71,15 @@ REFERENCE_HEX_PARAMS = {
 }
 
 # ─────────────────────────────────────────────
+# Wavy Hexagon Parameters
+# ─────────────────────────────────────────────
+WAVY_HEXAGON_PARAMS = {
+    "radius":         100.0,   # µm – circumradius of the hexagon
+    "amplitude":        5.0,   # µm – peak amplitude of the sine wave along the edges
+    "period":          20.0,   # µm – length of one full sine wave cycle
+}
+
+# ─────────────────────────────────────────────
 # Layer Definitions
 # ─────────────────────────────────────────────
 # AutoCAD Color Index (ACI):

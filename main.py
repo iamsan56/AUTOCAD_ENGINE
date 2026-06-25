@@ -41,12 +41,14 @@ DESIGN_REGISTRY: dict[str, str] = {
     "microheater":          "designs.microheater",
     "hex_spiral_heater":    "designs.hex_spiral_heater",
     "reference_hex_heater": "designs.reference_hex_heater",
+    "wavy_hexagon":         "designs.wavy_hexagon",
 }
 
 DESIGN_LABELS: dict[str, str] = {
     "microheater":          "Mirrored Wavy Microheater",
     "hex_spiral_heater":    "Hexagonal Spiral Microheater",
     "reference_hex_heater": "Reference Hexagonal Serpentine",
+    "wavy_hexagon":         "Wavy Hexagon",
 }
 
 FORMAT_OPTIONS = [
