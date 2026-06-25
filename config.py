@@ -105,6 +105,21 @@ RECTIFIED_REFERENCE_HEX_PARAMS = {
 }
 
 # ─────────────────────────────────────────────
+# Rectified Hexagonal Spiral Parameters
+# ─────────────────────────────────────────────
+RECTIFIED_HEX_SPIRAL_PARAMS = {
+    "R_max":            450.0,
+    "n_rings":          7,
+    "track_separation": 20.0,
+    "ring_gap":         20.0,
+    "lead_length":      50.0,
+    
+    "amplitude":        5.0,
+    "period":           10.0,
+    "outward_bumps":    True,
+}
+
+# ─────────────────────────────────────────────
 # Layer Definitions
 # ─────────────────────────────────────────────
 # AutoCAD Color Index (ACI):

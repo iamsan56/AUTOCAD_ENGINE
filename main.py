@@ -44,6 +44,7 @@ DESIGN_REGISTRY: dict[str, str] = {
     "wavy_hexagon":         "designs.wavy_hexagon",
     "rectified_hexagon":    "designs.rectified_hexagon",
     "rectified_reference_hex": "designs.rectified_reference_hex",
+    "rectified_hex_spiral": "designs.rectified_hex_spiral",
 }
 
 DESIGN_LABELS: dict[str, str] = {
@@ -53,6 +54,7 @@ DESIGN_LABELS: dict[str, str] = {
     "wavy_hexagon":         "Wavy Hexagon",
     "rectified_hexagon":    "Rectified (Semi-circle) Hexagon",
     "rectified_reference_hex": "Rectified Reference Serpentine",
+    "rectified_hex_spiral": "Rectified Hexagonal Spiral",
 }
 
 FORMAT_OPTIONS = [
