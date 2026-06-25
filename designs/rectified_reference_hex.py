@@ -46,7 +46,7 @@ def calc_gap_endpoints(R: float, gap_width: float) -> tuple[tuple[float, float],
     return (p_right_x, p_right_y), (p_left_x, p_left_y)
 
 
-def path_ccw_wavy(R: float, gap_width: float, amp: float, per: float, outward: bool) -> list[float]:
+def path_ccw_wavy(R: float, gap_width: float, amp: float, per: float, outward: bool, N_full: int, N_gap: int) -> list[float]:
     """
     Generate a CCW track segment at radius R, using rectified waves.
     For CCW, "right of path" is outward.
@@ -62,13 +62,17 @@ def path_ccw_wavy(R: float, gap_width: float, amp: float, per: float, outward: b
     for i in range(len(waypoints) - 1):
         x0, y0 = waypoints[i]
         x1, y1 = waypoints[i+1]
-        wave = rectified_wave_pts(x0, y0, x1, y1, amp, per, n_points=50, outward=outward)
+        
+        # The first and last segments are partial edges bounding the gap
+        nb = N_gap if (i == 0 or i == len(waypoints) - 2) else N_full
+            
+        wave = rectified_wave_pts(x0, y0, x1, y1, amp, per, n_points=50, outward=outward, num_bumps=nb)
         append_segment(pts, wave)
         
     return pts
 
 
-def path_cw_wavy(R: float, gap_width: float, amp: float, per: float, outward: bool) -> list[float]:
+def path_cw_wavy(R: float, gap_width: float, amp: float, per: float, outward: bool, N_full: int, N_gap: int) -> list[float]:
     """
     Generate a CW track segment at radius R, using rectified waves.
     For CW, "right of path" is INWARD. To keep bumps outward, we flip the outward flag.
@@ -84,7 +88,10 @@ def path_cw_wavy(R: float, gap_width: float, amp: float, per: float, outward: bo
     for i in range(len(waypoints) - 1):
         x0, y0 = waypoints[i]
         x1, y1 = waypoints[i+1]
-        wave = rectified_wave_pts(x0, y0, x1, y1, amp, per, n_points=50, outward=not outward)
+        
+        nb = N_gap if (i == 0 or i == len(waypoints) - 2) else N_full
+        
+        wave = rectified_wave_pts(x0, y0, x1, y1, amp, per, n_points=50, outward=not outward, num_bumps=nb)
         append_segment(pts, wave)
         
     return pts
@@ -110,6 +117,12 @@ def build_path(params: dict | None = None) -> list[float]:
 
     rings = [R_max - i * spacing for i in range(N)]
     all_pts: list[float] = []
+    
+    # Calculate global bump counts based on the outermost track
+    # This guarantees perfect radial alignment of all crests and troughs
+    N_full = max(1, round(R_max / per))
+    d_along = gap_width / math.sqrt(3)
+    N_gap = max(1, round((R_max - d_along) / per))
 
     # ── Terminal 1 (Outer track lead) ──────────────────────────────
     u_v3 = (-math.sqrt(3)/2, -0.5)
@@ -128,17 +141,18 @@ def build_path(params: dict | None = None) -> list[float]:
 
         if i % 2 == 0:
             # Even tracks go CCW
-            append_segment(all_pts, path_ccw_wavy(R, gap_width, amp, per, outward))
+            append_segment(all_pts, path_ccw_wavy(R, gap_width, amp, per, outward, N_full, N_gap))
 
             # U-turn on the LEFT side (connects Track i to Track i+1)
             if i < N - 1:
                 _, p_left_next = calc_gap_endpoints(rings[i+1], gap_width)
                 # Instead of a smooth arc (big semicircle head), connect with a straight rectified wave
+                # Number of bumps = spacing / per. We let it auto-calculate so it connects perfectly.
                 wave_u_turn = rectified_wave_pts(p_left[0], p_left[1], p_left_next[0], p_left_next[1], amp, per, n_points=50, outward=outward)
                 append_segment(all_pts, wave_u_turn)
         else:
             # Odd tracks go CW
-            append_segment(all_pts, path_cw_wavy(R, gap_width, amp, per, outward))
+            append_segment(all_pts, path_cw_wavy(R, gap_width, amp, per, outward, N_full, N_gap))
 
             # U-turn on the RIGHT side
             if i < N - 1:

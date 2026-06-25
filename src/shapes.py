@@ -72,7 +72,8 @@ def rectified_wave_pts(
     amplitude: float,
     period: float,
     n_points: int = 200,
-    outward: bool = True
+    outward: bool = True,
+    num_bumps: int | None = None
 ) -> List[float]:
     """
     Generate a full-wave rectified polyline (only positive semi-circle bumps) 
@@ -95,7 +96,8 @@ def rectified_wave_pts(
         px, py = -dy, dx
 
     # Force the period to fit exactly into the edge length so the bump ends exactly at 0
-    num_bumps = max(1, round(length / period))
+    if num_bumps is None:
+        num_bumps = max(1, round(length / period))
     actual_period = length / num_bumps
 
     # Ensure enough resolution for smooth semicircles (at least 30 points per bump)
