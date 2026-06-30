@@ -2,7 +2,7 @@
 designs/large_hex_spiral.py — Large Straight Double Hexagonal Spiral
 
 Bifilar (double) continuous hexagonal spiral with straight lines.
-Includes 1000x1000 um terminal pads.
+Includes clean separated terminal leads and a smooth center U-turn to avoid overlap.
 """
 
 from __future__ import annotations
@@ -15,19 +15,27 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from config import LARGE_HEX_SPIRAL_PARAMS
 
 
-def draw_square_pad(cx: float, cy: float, size: float) -> list[float]:
-    """Return a closed square polyline centered at (cx, cy)."""
-    hs = size / 2.0
-    return [
-        cx, cy,               # Start at center (to connect from lead)
-        cx - hs, cy,          # Go left
-        cx - hs, cy - hs,     # Go down
-        cx + hs, cy - hs,     # Go right
-        cx + hs, cy + hs,     # Go up
-        cx - hs, cy + hs,     # Go left
-        cx - hs, cy,          # Return to left-center
-        cx, cy                # Return to center
-    ]
+def radial_uturn(A: tuple[float, float], B: tuple[float, float], bulge: float, n: int = 20) -> list[float]:
+    """Quadratic Bezier U-turn bridging A to B."""
+    mx = (A[0] + B[0]) / 2.0
+    my = (A[1] + B[1]) / 2.0
+    dist = math.hypot(mx, my)
+    if dist > 1e-9:
+        nx, ny = mx / dist, my / dist
+    else:
+        nx, ny = 0.0, -1.0
+
+    cx = mx + bulge * nx
+    cy = my + bulge * ny
+
+    pts: list[float] = []
+    for i in range(1, n + 1):  # Start at 1 to avoid duplicating point A
+        t  = i / n
+        mt = 1.0 - t
+        x  = mt * mt * A[0] + 2.0 * mt * t * cx + t * t * B[0]
+        y  = mt * mt * A[1] + 2.0 * mt * t * cy + t * t * B[1]
+        pts.extend([x, y])
+    return pts
 
 
 def build_path(params: dict | None = None) -> list[float]:
@@ -36,7 +44,6 @@ def build_path(params: dict | None = None) -> list[float]:
     R_max       = p["R_max"]
     n_turns     = p["n_turns"]
     spacing     = p["spacing"]
-    pad_size    = p["pad_size"]
     lead_len    = p["lead_length"]
 
     all_pts: list[float] = []
@@ -44,16 +51,13 @@ def build_path(params: dict | None = None) -> list[float]:
     
     start_angle = math.radians(240)
     
-    # ── IN Terminal Pad ─────────────────────────────────────────────
+    # ── IN Terminal Lead ─────────────────────────────────────────────
     # Spiral 1 starts at radius R_max, angle 240
-    in_cx = (R_max + lead_len) * math.cos(start_angle)
-    in_cy = (R_max + lead_len) * math.sin(start_angle)
+    # Extending outwards along the same 240 degree angle
+    in_pad_x = (R_max + lead_len) * math.cos(start_angle)
+    in_pad_y = (R_max + lead_len) * math.sin(start_angle)
+    all_pts.extend([in_pad_x, in_pad_y])
     
-    # Draw pad 1
-    pad1_pts = draw_square_pad(in_cx, in_cy, pad_size)
-    all_pts.extend(pad1_pts)
-    
-    # Connect from pad to spiral start
     start_x = R_max * math.cos(start_angle)
     start_y = R_max * math.sin(start_angle)
     all_pts.extend([start_x, start_y])
@@ -65,26 +69,36 @@ def build_path(params: dict | None = None) -> list[float]:
         all_pts.extend([R * math.cos(angle), R * math.sin(angle)])
         
     # ── Center Connection ──────────────────────────────────────────
-    # The straight line connecting Spiral 1 to Spiral 2 is automatically formed
-    # by just continuing to the first point of Spiral 2!
+    # Smooth U-turn to completely eliminate sharp corners & track overlap
+    A_x, A_y = all_pts[-2], all_pts[-1]
+    
+    B_R = R_max - spacing - N_verts * (spacing / 3.0)
+    B_angle = math.radians(240 - N_verts * 60)
+    B_x, B_y = B_R * math.cos(B_angle), B_R * math.sin(B_angle)
+    
+    all_pts.extend(radial_uturn((A_x, A_y), (B_x, B_y), bulge=-spacing/1.5))
         
     # ── Spiral 2 (OUT) ─────────────────────────────────────────────
     for i in range(N_verts, -1, -1):
+        # Skip the first point since radial_uturn just placed it
+        if i == N_verts:
+            continue
+            
         R = R_max - spacing - i * (spacing / 3.0)
         angle = math.radians(240 - i * 60)
         all_pts.extend([R * math.cos(angle), R * math.sin(angle)])
         
-    # ── OUT Terminal Pad ────────────────────────────────────────────
-    # Spiral 2 ends at R_max - spacing, angle 240    
-    out_cx = (R_max - spacing + lead_len) * math.cos(start_angle)
-    out_cy = (R_max - spacing + lead_len) * math.sin(start_angle)
+    # ── OUT Terminal Lead ────────────────────────────────────────────
+    # Spiral 2 ends at R_max - spacing, angle 240
+    # Route this lead DOWN-RIGHT (300 degrees) so it does NOT overlap Spiral 1's lead
+    out_end_x = (R_max - spacing) * math.cos(start_angle)
+    out_end_y = (R_max - spacing) * math.sin(start_angle)
     
-    # Connect from spiral end to pad center
-    all_pts.extend([out_cx, out_cy])
+    route_angle = math.radians(300)
+    out_pad_x = out_end_x + lead_len * math.cos(route_angle)
+    out_pad_y = out_end_y + lead_len * math.sin(route_angle)
     
-    # Draw pad 2 (skip the first vertex to avoid duplicating the center point)
-    pad2_pts = draw_square_pad(out_cx, out_cy, pad_size)
-    all_pts.extend(pad2_pts[2:])
+    all_pts.extend([out_pad_x, out_pad_y])
 
     return all_pts
 
@@ -95,8 +109,8 @@ DESIGN_META = {
     "layer":  "MICROHEATER",
     "units":  "micrometers",
     "description": (
-        "Large 32x32mm straight-line bifilar hexagonal spiral with 5 turns. "
-        "Continuous electrical path with 1000x1000um terminal pads."
+        "Large straight-line bifilar hexagonal spiral. "
+        "Continuous electrical path with separated leads and smooth center."
     ),
 }
 
