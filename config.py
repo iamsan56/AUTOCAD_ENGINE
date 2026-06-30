@@ -119,6 +119,17 @@ RECTIFIED_HEX_SPIRAL_PARAMS = {
 }
 
 # ─────────────────────────────────────────────
+# Large Straight Hexagonal Spiral Parameters
+# ─────────────────────────────────────────────
+LARGE_HEX_SPIRAL_PARAMS = {
+    "R_max": 16000.0,            # 32,000 um overall width
+    "n_turns": 5,                # 5 full turns per spiral
+    "spacing": 1600.0,           # Track width (800) + Edge Spacing (800) = 1600 pitch
+    "pad_size": 1000.0,          # Terminal pad width/height
+    "lead_length": 2000.0,       # Distance from spiral to pad center
+}
+
+# ─────────────────────────────────────────────
 # Layer Definitions
 # ─────────────────────────────────────────────
 # AutoCAD Color Index (ACI):
