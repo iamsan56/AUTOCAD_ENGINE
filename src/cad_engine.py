@@ -137,7 +137,12 @@ class AutoCADEngine:
                 self.use_active_drawing()
                 return
 
-        self._acad.ActiveDocument = self._doc
+        # Make the document active safely
+        try:
+            self._doc.Activate()
+        except Exception:
+            pass
+            
         self._mspace = self._doc.ModelSpace
         
         # Force the ribbon and command line to show (COM automation sometimes hides them)
