@@ -97,6 +97,12 @@ class AutoCADEngine:
         
         self._acad.Visible = True
         
+        # Maximize the AutoCAD window
+        try:
+            self._acad.WindowState = 3  # acMax
+        except Exception:
+            pass
+        
         # Give AutoCAD time to fully start up if it's launching
         for _ in range(10):
             try:
@@ -133,12 +139,27 @@ class AutoCADEngine:
 
         self._acad.ActiveDocument = self._doc
         self._mspace = self._doc.ModelSpace
+        
+        # Force the ribbon and command line to show (COM automation sometimes hides them)
+        try:
+            self._doc.SendCommand("RIBBON\n")
+            self._doc.SendCommand("COMMANDLINE\n")
+        except Exception:
+            pass
+            
         print_ok("New drawing created")
 
     def use_active_drawing(self) -> None:
         """Attach to the currently active AutoCAD document."""
         self._doc    = self._acad.ActiveDocument
         self._mspace = self._doc.ModelSpace
+        
+        # Force the ribbon to show just in case
+        try:
+            self._doc.SendCommand("RIBBON\n")
+        except Exception:
+            pass
+            
         print_ok(f"Using active document: {self._doc.Name}")
 
     # ── Layer management ─────────────────────────────────────────
