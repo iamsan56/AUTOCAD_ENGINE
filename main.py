@@ -41,8 +41,9 @@ DESIGN_REGISTRY: dict[str, str] = {
     "microheater":          "designs.microheater",
     "hex_spiral_heater":    "designs.hex_spiral_heater",
     "reference_hex_heater": "designs.reference_hex_heater",
-    "wavy_spiral_heater":   "designs.wavy_spiral_heater",
-    "rectified_reference":  "designs.rectified_reference",
+    "wavy_hexagon":         "designs.wavy_hexagon",
+    "rectified_hexagon":    "designs.rectified_hexagon",
+    "rectified_reference_hex": "designs.rectified_reference_hex",
     "rectified_hex_spiral": "designs.rectified_hex_spiral",
     "large_hex_spiral":     "designs.large_hex_spiral",
 }
@@ -51,8 +52,9 @@ DESIGN_LABELS: dict[str, str] = {
     "microheater":          "[1] Standard Microheater (Wavy Serpentine)",
     "hex_spiral_heater":    "[2] Hexagonal Spiral Microheater (Double-Pass Serpentine)",
     "reference_hex_heater": "[3] Reference Hexagonal Heater (Straight Serpentine)",
-    "wavy_spiral_heater":   "[4] Wavy Hexagonal Spiral (True Sine)",
-    "rectified_reference":  "[6] Rectified Reference Serpentine (Full-Wave)",
+    "wavy_hexagon":         "[4] Wavy Hexagon",
+    "rectified_hexagon":    "[5] Rectified (Semi-circle) Hexagon",
+    "rectified_reference_hex": "[6] Rectified Reference Serpentine",
     "rectified_hex_spiral": "[7] Rectified Hexagonal Spiral (Full-Wave)",
     "large_hex_spiral":     "[8] Large Straight Double Hexagonal Spiral",
 }
