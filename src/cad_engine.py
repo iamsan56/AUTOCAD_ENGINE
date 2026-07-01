@@ -153,6 +153,7 @@ class AutoCADEngine:
             pass
             
         print_ok("New drawing created")
+        time.sleep(1.0)  # Give AutoCAD UI thread time to settle to prevent COM rejections
 
     def use_active_drawing(self) -> None:
         """Attach to the currently active AutoCAD document."""
@@ -313,8 +314,16 @@ class AutoCADEngine:
         """
         Set drawing units variable.
         6 = micrometers (INSUNITS system variable).
+        Handles RPC_E_CALL_REJECTED with a retry loop.
         """
-        self._doc.SetVariable("INSUNITS", insunits)
+        for attempt in range(5):
+            try:
+                self._doc.SetVariable("INSUNITS", insunits)
+                return
+            except Exception as e:
+                if attempt == 4:
+                    print_err(f"Warning: Failed to set units after retries ({e}). Ensure no dialog boxes are open in AutoCAD.")
+                time.sleep(0.5)
 
     def zoom_extents(self) -> None:
         """Zoom to fit all entities."""
