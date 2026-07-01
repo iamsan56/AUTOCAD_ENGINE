@@ -19,14 +19,19 @@ def radial_uturn(A: tuple[float, float], B: tuple[float, float], bulge: float, n
     """Quadratic Bezier U-turn bridging A to B."""
     mx = (A[0] + B[0]) / 2.0
     my = (A[1] + B[1]) / 2.0
-    dist = math.hypot(mx, my)
+    # Vector A -> B
+    dx = B[0] - A[0]
+    dy = B[1] - A[1]
+    dist = math.hypot(dx, dy)
+    
     if dist > 1e-9:
-        nx, ny = mx / dist, my / dist
+        # Perpendicular vector to bulge outwards cleanly
+        px, py = -dy / dist, dx / dist
     else:
-        nx, ny = 0.0, -1.0
+        px, py = 0.0, 1.0
 
-    cx = mx + bulge * nx
-    cy = my + bulge * ny
+    cx = mx + bulge * px
+    cy = my + bulge * py
 
     pts: list[float] = []
     for i in range(1, n + 1):  # Start at 1 to avoid duplicating point A
@@ -76,7 +81,7 @@ def build_path(params: dict | None = None) -> list[float]:
     B_angle = math.radians(240 - N_verts * 60)
     B_x, B_y = B_R * math.cos(B_angle), B_R * math.sin(B_angle)
     
-    all_pts.extend(radial_uturn((A_x, A_y), (B_x, B_y), bulge=-spacing/1.5))
+    all_pts.extend(radial_uturn((A_x, A_y), (B_x, B_y), bulge=spacing))
         
     # ── Spiral 2 (OUT) ─────────────────────────────────────────────
     for i in range(N_verts, -1, -1):
