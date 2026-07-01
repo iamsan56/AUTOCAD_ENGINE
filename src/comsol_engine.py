@@ -80,6 +80,12 @@ class ComsolEngine:
             imp = geom.feature().create(imp_tag, "Import")
             imp.set("filename", dxf_path)
             
+            # Force COMSOL to interpret closed curves/regions as Solid faces
+            try:
+                imp.set("type", "solid")
+            except Exception:
+                pass # Depending on COMSOL version, property might be seltype or similar, but type=solid is standard for DXF import
+
             # Build geometry
             geom.run()
             print_ok(f"Geometry imported and built successfully under node '{imp_tag}'.")

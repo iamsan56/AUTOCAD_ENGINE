@@ -246,6 +246,29 @@ class AutoCADEngine:
                 
         return pline
 
+    def draw_region(self, pline: Any, layer: str = "0") -> Any:
+        """Convert a closed polyline into a Solid Region."""
+        try:
+            # AddRegion expects an array of curves
+            # In pywin32, lists of COM objects often need to be passed directly or as VARIANT
+            regions = self._mspace.AddRegion([pline])
+            if regions:
+                region = regions[0]
+                try:
+                    region.Layer = layer
+                except Exception:
+                    region.layer = layer
+                
+                # Delete the original bounding polyline
+                try:
+                    pline.Delete()
+                except Exception:
+                    pass
+                return region
+        except Exception as e:
+            print_err(f"Failed to create Region: {e}")
+            return None
+
     def draw_text(
         self,
         text:   str,

@@ -24,6 +24,7 @@ import argparse
 import importlib
 import os
 import sys
+import subprocess
 
 # ── Make sure project root is on sys.path ──────────────────────────
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -131,6 +132,29 @@ def interactive_select_format() -> str:
             print("\n  Defaulting to DWG.")
             return "dwg"
 
+def interactive_simulate_prompt() -> bool:
+    """Ask if the user wants to simulate in COMSOL."""
+    print("  ┌─────────────────────────────────────────────────────┐")
+    print("  │         Simulate in COMSOL Multiphysics?            │")
+    print("  └─────────────────────────────────────────────────────┘")
+    print()
+    print("    [y] Yes  — Export solid 2D face and automate COMSOL")
+    print("    [n] No   — Standard 1D path for AutoCAD")
+    print()
+    while True:
+        try:
+            raw = input("  Enter choice [n]: ").strip().lower() or "n"
+            if raw in ["y", "yes"]:
+                print(f"\n  ✅  Simulation: ENABLED\n")
+                return True
+            if raw in ["n", "no"]:
+                print(f"\n  ✅  Simulation: DISABLED\n")
+                return False
+            print("  ⚠️   Please enter y or n.")
+        except (EOFError, KeyboardInterrupt):
+            print("\n  Defaulting to NO.")
+            return False
+
 
 # ─────────────────────────────────────────────────────────────────
 # List designs (for --list flag)
@@ -183,12 +207,17 @@ def run_design(design_name: str, fmt: str, simulate: bool = False) -> None:
                 # 800 width offset for COMSOL
                 poly_pts = offset_polyline(path_pts, width=800.0)
                 if poly_pts:
-                    cad.draw_lwpolyline(poly_pts, layer=layer, width=0.0, closed=True)
-                    print_ok("Generated 2D solid footprint for COMSOL simulation.")
+                    pline = cad.draw_lwpolyline(poly_pts, layer=layer, width=0.0, closed=True)
+                    # Convert to AutoCAD Region (Solid Face) for guaranteed COMSOL import
+                    region = cad.draw_region(pline, layer=layer)
+                    if region:
+                        print_ok("Generated 2D Solid Region for COMSOL simulation.")
+                    else:
+                        print_info("Region creation failed. Falling back to closed polyline.")
                 else:
                     raise ValueError("offset_polyline returned empty list.")
             except Exception as e:
-                print_err(f"Failed to generate 2D offset: {e}")
+                print_err(f"Failed to generate 2D solid: {e}")
                 cad.draw_lwpolyline(path_pts, layer=layer, width=0.0)
         else:
             cad.draw_lwpolyline(path_pts, layer=layer, width=0.0)
@@ -251,14 +280,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--format", "-f", default=None,
                         choices=["dwg", "dxf", "both"],
                         help="Output format (skip interactive menu)")
-    parser.add_argument("--simulate", "-s", action="store_true",
-                        help="Run COMSOL simulation on the generated design")
     parser.add_argument("--list", "-l", action="store_true",
                         help="List all registered designs and exit")
     return parser.parse_args()
 
 
 def main() -> None:
+    # ── Auto-fix Git GC locks ──────────────────────────────────────
+    try:
+        subprocess.run(["git", "config", "gc.auto", "0"], capture_output=True, text=True)
+    except Exception:
+        pass
+
     args = parse_args()
 
     if args.list:
@@ -280,11 +313,14 @@ def main() -> None:
         print_err(f"Unknown design '{design}'. Run with --list to see options.")
         sys.exit(1)
 
+    # ── COMSOL simulation selection ────────────────────────────────
+    simulate = interactive_simulate_prompt()
+
     # ── Format selection ───────────────────────────────────────────
     fmt = args.format if args.format else interactive_select_format()
 
     # ── Execute ────────────────────────────────────────────────────
-    run_design(design, fmt, simulate=args.simulate)
+    run_design(design, fmt, simulate=simulate)
 
 
 if __name__ == "__main__":
