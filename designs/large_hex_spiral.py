@@ -16,9 +16,10 @@ from config import LARGE_HEX_SPIRAL_PARAMS
 
 
 def radial_uturn(A: tuple[float, float], B: tuple[float, float], bulge: float, n: int = 20) -> list[float]:
-    """Quadratic Bezier U-turn bridging A to B."""
+    """Quadratic Bezier U-turn bridging A to B with a perpendicular bulge."""
     mx = (A[0] + B[0]) / 2.0
     my = (A[1] + B[1]) / 2.0
+    
     # Vector A -> B
     dx = B[0] - A[0]
     dy = B[1] - A[1]
