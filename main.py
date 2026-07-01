@@ -32,6 +32,8 @@ if PROJECT_ROOT not in sys.path:
 
 from config         import LAYERS, SAVES_DIR, INSUNITS
 from src.cad_engine import AutoCADEngine
+from src.comsol_engine import ComsolEngine
+from src.geometry_utils import offset_polyline
 from src.utils      import print_header, print_ok, print_info, print_err, make_save_path
 
 # ─────────────────────────────────────────────────────────────────
@@ -148,8 +150,8 @@ def list_designs() -> None:
 # Core drawing routine
 # ─────────────────────────────────────────────────────────────────
 
-def run_design(design_name: str, fmt: str) -> None:
-    """Open AutoCAD, draw *design_name*, save in *fmt* format."""
+def run_design(design_name: str, fmt: str, simulate: bool = False) -> None:
+    """Open AutoCAD, draw *design_name*, save in *fmt* format, optionally simulate in COMSOL."""
 
     if design_name not in DESIGN_REGISTRY:
         print_err(
@@ -176,21 +178,56 @@ def run_design(design_name: str, fmt: str) -> None:
         cad.setup_layers(LAYERS)
 
         layer = meta.get("layer", "MICROHEATER")
-        cad.draw_lwpolyline(path_pts, layer=layer, width=0.0)
-        print_ok(f"Design drawn on layer '{layer}' (colour: White)")
+        if simulate:
+            try:
+                # 800 width offset for COMSOL
+                poly_pts = offset_polyline(path_pts, width=800.0)
+                if poly_pts:
+                    cad.draw_lwpolyline(poly_pts, layer=layer, width=0.0, closed=True)
+                    print_ok("Generated 2D solid footprint for COMSOL simulation.")
+                else:
+                    raise ValueError("offset_polyline returned empty list.")
+            except Exception as e:
+                print_err(f"Failed to generate 2D offset: {e}")
+                cad.draw_lwpolyline(path_pts, layer=layer, width=0.0)
+        else:
+            cad.draw_lwpolyline(path_pts, layer=layer, width=0.0)
+            print_ok(f"Design drawn on layer '{layer}' (colour: White)")
 
         cad.regen()
         cad.zoom_extents()
 
         # ── Save ──────────────────────────────────────────────────
         formats_to_save = ["dwg", "dxf"] if fmt == "both" else [fmt]
+        # Force DXF if simulating
+        if simulate and "dxf" not in formats_to_save:
+            formats_to_save.append("dxf")
+            
         saved_paths: list[str] = []
 
         for f in formats_to_save:
             sp = make_save_path(SAVES_DIR, design_name, f)
             cad.save(sp, fmt=f)
             saved_paths.append(sp)
+            if f == "dxf":
+                dxf_path = sp
 
+    # ── COMSOL Simulation ─────────────────────────────────────────
+    if simulate:
+        print()
+        print_header("COMSOL Simulation Engine")
+        template_path = os.path.join(PROJECT_ROOT, "base_template.mph")
+        out_path = make_save_path(SAVES_DIR, design_name + "_simulated", "mph")
+        
+        try:
+            with ComsolEngine() as comsol:
+                comsol.load_template(template_path)
+                comsol.import_geometry(dxf_path)
+                comsol.solve()
+                comsol.save(out_path)
+        except Exception as e:
+            print_err(f"COMSOL simulation aborted: {e}")
+            
     # ── Summary ────────────────────────────────────────────────────
     print()
     print_header("Done")
@@ -214,6 +251,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--format", "-f", default=None,
                         choices=["dwg", "dxf", "both"],
                         help="Output format (skip interactive menu)")
+    parser.add_argument("--simulate", "-s", action="store_true",
+                        help="Run COMSOL simulation on the generated design")
     parser.add_argument("--list", "-l", action="store_true",
                         help="List all registered designs and exit")
     return parser.parse_args()
@@ -245,7 +284,7 @@ def main() -> None:
     fmt = args.format if args.format else interactive_select_format()
 
     # ── Execute ────────────────────────────────────────────────────
-    run_design(design, fmt)
+    run_design(design, fmt, simulate=args.simulate)
 
 
 if __name__ == "__main__":
